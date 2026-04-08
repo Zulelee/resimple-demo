@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Webhook Prompt Sender</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Send Prompt to Webhook</h1>
+      <p class="subtitle">Enter a system prompt and user prompt, then send to n8n.</p>
+
+      <form id="prompt-form">
+        <label for="systemPrompt">System Prompt</label>
+        <textarea
+          id="systemPrompt"
+          name="systemPrompt"
+          placeholder="You are a helpful assistant..."
+          rows="6"
+          required
+        ></textarea>
+
+        <label for="userPrompt">User Prompt</label>
+        <textarea
+          id="userPrompt"
+          name="userPrompt"
+          placeholder="Write a short summary of..."
+          rows="6"
+          required
+        ></textarea>
+
+        <button type="submit" id="submitBtn">Send to Webhook</button>
+      </form>
+
+      <section>
+        <h2>Status</h2>
+        <pre id="status">Waiting for input…</pre>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
