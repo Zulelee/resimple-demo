@@ -74,7 +74,7 @@ export default function Home() {
             value={systemPrompt}
             onChange={(e) => setSystemPrompt(e.target.value)}
             rows={4}
-            className="resize-y rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-950"
+            className="resize-y rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm outline-none ring-zinc-400 focus:ring-2"
             placeholder="Optional system instructions…"
           />
         </label>
@@ -85,26 +85,26 @@ export default function Home() {
             value={userPrompt}
             onChange={(e) => setUserPrompt(e.target.value)}
             rows={14}
-            className="resize-y rounded-md border border-zinc-200 bg-white px-3 py-2 font-mono text-xs leading-relaxed outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-950"
+            className="resize-y rounded-md border border-zinc-200 bg-white px-3 py-2 font-mono text-xs leading-relaxed outline-none ring-zinc-400 focus:ring-2"
           />
         </label>
 
         <button
           type="submit"
           disabled={loading}
-          className="self-start rounded-md border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm text-white transition hover:bg-zinc-800 disabled:opacity-50 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className="self-start rounded-md border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm text-white transition hover:bg-zinc-800 disabled:opacity-50"
         >
           {loading ? "Sending…" : "Send"}
         </button>
       </form>
 
       {error ? (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className="text-sm text-red-600">{error}</p>
       ) : null}
 
       <section className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-zinc-600">Response</h2>
-        <pre className="max-h-[min(70vh,32rem)] overflow-auto rounded-md border border-zinc-200 bg-zinc-50 p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap dark:border-zinc-800 dark:bg-zinc-900/50">
+        <pre className="max-h-[min(70vh,32rem)] overflow-auto rounded-md border border-zinc-200 bg-zinc-50 p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap">
           {outputText || "—"}
         </pre>
       </section>
