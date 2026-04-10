@@ -25,7 +25,7 @@ const nav: { id: Mode; label: string; description: string }[] = [
   {
     id: "generate-summary",
     label: "Generate Summary",
-    description: "Upload .txt → summary webhook",
+    description: "Paste text → summary webhook",
   },
 ];
 
@@ -35,7 +35,7 @@ export default function Home() {
   const [systemPrompt, setSystemPrompt] = useState("");
   const [userPrompt, setUserPrompt] = useState(DEFAULT_USER_PROMPT);
 
-  const [file, setFile] = useState<File | null>(null);
+  const [summaryInput, setSummaryInput] = useState("");
 
   const [outputText, setOutputText] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -77,18 +77,17 @@ export default function Home() {
     }
   }
 
-  async function handleTextFileSubmit(e: React.FormEvent) {
+  async function handleSummarySubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!file) {
-      setError("Choose a .txt file first.");
+    const text = summaryInput.trim();
+    if (!text) {
+      setError("Enter some text to summarize.");
       return;
     }
 
     setLoading(true);
     try {
-      const text = await file.text();
-
       const res = await fetch("/api/webhook-text", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -195,7 +194,7 @@ export default function Home() {
                 Generate Summary
               </h1>
               <p className="text-sm text-zinc-500">
-                Upload a .txt file. Its contents are sent as{" "}
+                Paste or type the content to summarize. It is sent as{" "}
                 <code className="rounded bg-zinc-100 px-1 py-0.5 font-mono text-xs">
                   text
                 </code>{" "}
@@ -205,34 +204,23 @@ export default function Home() {
             </header>
 
             <form
-              onSubmit={handleTextFileSubmit}
+              onSubmit={handleSummarySubmit}
               className="flex flex-col gap-6"
             >
               <label className="flex flex-col gap-2">
-                <span className="text-sm text-zinc-600">File</span>
-                <input
-                  type="file"
-                  accept=".txt,text/plain"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0] ?? null;
-                    setFile(f);
-                  }}
-                  className="text-sm file:mr-3 file:rounded-md file:border file:border-zinc-200 file:bg-white file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-zinc-50"
+                <span className="text-sm text-zinc-600">Text to summarize</span>
+                <textarea
+                  value={summaryInput}
+                  onChange={(e) => setSummaryInput(e.target.value)}
+                  rows={14}
+                  className="resize-y rounded-md border border-zinc-200 bg-white px-3 py-2 font-mono text-xs leading-relaxed outline-none ring-zinc-400 focus:ring-2"
+                  placeholder="Paste transcript, notes, or any text…"
                 />
-                {file ? (
-                  <span className="text-xs text-zinc-500">
-                    {file.name} · {(file.size / 1024).toFixed(1)} KB
-                  </span>
-                ) : (
-                  <span className="text-xs text-zinc-400">
-                    No file selected
-                  </span>
-                )}
               </label>
 
               <button
                 type="submit"
-                disabled={loading || !file}
+                disabled={loading || !summaryInput.trim()}
                 className="self-start rounded-md border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm text-white transition hover:bg-zinc-800 disabled:opacity-50"
               >
                 {loading ? "Sending…" : "Send"}
