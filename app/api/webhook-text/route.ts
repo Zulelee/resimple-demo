@@ -35,5 +35,6 @@ export async function POST(request: Request) {
     );
   }
 
+  // Upstream returns the same JSON as /api/webhook: { text, cost }.
   return NextResponse.json(data);
 }
