@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { DEFAULT_SMS_SYSTEM_PROMPT } from "@/lib/default-sms-system-prompt";
 import { DEFAULT_USER_PROMPT } from "@/lib/default-user-prompt";
 import {
   extractWebhookCost,
@@ -47,15 +48,47 @@ function formatWebhookCost(cost: number): string {
   }).format(cost);
 }
 
+const CHICAGO_TZ = "America/Chicago";
+
+/** e.g. "Monday 13 April 2026 17:26" (24h, America/Chicago). */
+function formatChicagoDateTimeLine(at: Date): string {
+  const fmt = new Intl.DateTimeFormat("en-GB", {
+    timeZone: CHICAGO_TZ,
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    hourCycle: "h23",
+  });
+  const parts = fmt.formatToParts(at);
+  const pick = (type: Intl.DateTimeFormatPart["type"]) =>
+    parts.find((p) => p.type === type)?.value ?? "";
+  const weekday = pick("weekday");
+  const day = pick("day");
+  const month = pick("month");
+  const year = pick("year");
+  const hour = pick("hour").padStart(2, "0");
+  const minute = pick("minute").padStart(2, "0");
+  return `${weekday} ${day} ${month} ${year} ${hour}:${minute}`;
+}
+
 function buildSmsUserPrompt(
   summaryContext: string,
   availableSlots: string,
   messages: SmsMessage[],
+  chicagoNowLine: string,
 ): string {
   const summary = summaryContext.trim() || "_None._";
   const slots = availableSlots.trim() || "_None._";
   const smsBlock = formatRecentSmsMarkdown(messages);
-  return `## Summary context
+  return `## Current date and time (America/Chicago)
+
+${chicagoNowLine}
+
+## Summary context
 
 ${summary}
 
@@ -95,7 +128,9 @@ export default function Home() {
 
   const [summaryInput, setSummaryInput] = useState("");
 
-  const [smsSystemPrompt, setSmsSystemPrompt] = useState("");
+  const [smsSystemPrompt, setSmsSystemPrompt] = useState(
+    DEFAULT_SMS_SYSTEM_PROMPT,
+  );
   const [smsSummaryContext, setSmsSummaryContext] = useState("");
   const [smsAvailableSlots, setSmsAvailableSlots] = useState("");
   const [smsMessages, setSmsMessages] = useState<SmsMessage[]>([]);
@@ -106,11 +141,28 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const builtSmsUserPrompt = useMemo(
-    () =>
-      buildSmsUserPrompt(smsSummaryContext, smsAvailableSlots, smsMessages),
-    [smsSummaryContext, smsAvailableSlots, smsMessages],
-  );
+  /** Refreshes the built SMS user prompt clock while on Test SMS (preview). */
+  const [smsTimeTick, setSmsTimeTick] = useState(0);
+
+  useEffect(() => {
+    if (mode === "test-sms") setSmsTimeTick((n) => n + 1);
+  }, [mode]);
+
+  useEffect(() => {
+    if (mode !== "test-sms") return;
+    const id = setInterval(() => setSmsTimeTick((n) => n + 1), 30_000);
+    return () => clearInterval(id);
+  }, [mode]);
+
+  const builtSmsUserPrompt = useMemo(() => {
+    void smsTimeTick;
+    return buildSmsUserPrompt(
+      smsSummaryContext,
+      smsAvailableSlots,
+      smsMessages,
+      formatChicagoDateTimeLine(new Date()),
+    );
+  }, [smsSummaryContext, smsAvailableSlots, smsMessages, smsTimeTick]);
 
   async function handlePromptSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -220,6 +272,7 @@ export default function Home() {
       smsSummaryContext,
       smsAvailableSlots,
       threadAfterUser,
+      formatChicagoDateTimeLine(new Date()),
     );
 
     setLoading(true);
